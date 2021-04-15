@@ -1,0 +1,48 @@
+---
+# This workflow integrates ShiftLeft NG SAST with GitHub
+# Visit https://docs.shiftleft.io for help
+name: ShiftLeft
+
+on:
+  workflow_dispatch:
+
+jobs:
+  OWASP-Benchmark-Score:
+    runs-on: ubuntu-20.04
+    needs: NextGen-Static-Analysis
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Java JDK
+      uses: actions/setup-java@v1.4.3
+      with:
+        java-version: 11.0.x
+    - name: Export NG SAST Findings
+      run: |
+        cd $HOME
+        git clone --depth 1 --branch v0.0.2  https://github.com/ShiftLeftSecurity/field-integrations
+        cd field-integrations/shiftleft-utils || exit 1
+        mkdir -p ${GITHUB_WORKSPACE}/ngsast_results
+        pip3 install -r requirements.txt
+        python3 export.py --app Benchmark -f sl -o ${GITHUB_WORKSPACE}/ngsast_results/Benchmark.sl
+      env:
+        SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ngsast_results
+        path: ${GITHUB_WORKSPACE}/ngsast_results
+    - name: Package with maven
+      run: mvn compile package
+    - name: Calculate OWASP Benchmark Score
+      run: |
+        cd ${GITHUB_WORKSPACE}
+        mvn validate -Pbenchmarkscore -Dexec.args="expectedresults-1.2.csv ngsast_results ShiftLeft anonymous"
+        if [ -e "scorecard/Benchmark_Scorecard_for_ShiftLeft.html" ]; then
+            echo "*** Thank you for Benchmarking ShiftLeft NextGen Static Analysis ***"
+            echo "You can find the results for ShiftLeft under workflow artifacts called scorecard"
+        else
+            echo "Benchmark results were not produced correctly. Check if you have Java 1.8 installed"
+        fi
+    - uses: actions/upload-artifact@v2
+      with:
+        name: scorecard
+        path: scorecard
