@@ -1,7 +1,7 @@
 ---
 # This workflow integrates ShiftLeft NG SAST with GitHub
 # Visit https://docs.shiftleft.io for help
-name: ShiftLeft
+name: ScoreCard
 
 on:
   workflow_dispatch:
@@ -9,7 +9,6 @@ on:
 jobs:
   OWASP-Benchmark-Score:
     runs-on: ubuntu-20.04
-    needs: NextGen-Static-Analysis
     steps:
     - uses: actions/checkout@v2
     - name: Setup Java JDK
