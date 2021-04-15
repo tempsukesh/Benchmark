@@ -28,7 +28,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: ngsast_results
-        path: ${GITHUB_WORKSPACE}/ngsast_results/Benchmark.sl
+        path: ngsast_results/Benchmark.sl
     - name: Package with maven
       run: mvn compile package
     - name: Calculate OWASP Benchmark Score
