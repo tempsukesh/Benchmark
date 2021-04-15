@@ -4,7 +4,6 @@
 name: ShiftLeft
 
 on:
-  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -54,6 +53,10 @@ jobs:
         python3 export.py --app Benchmark -f sl -o ${GITHUB_WORKSPACE}/ngsast_results/Benchmark.sl
       env:
         SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ngsast_results
+        path: ${GITHUB_WORKSPACE}/ngsast_results
     - name: Package with maven
       run: mvn compile package
     - name: Calculate OWASP Benchmark Score
